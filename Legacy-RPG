@@ -1,0 +1,584 @@
+#include <iostream>
+
+#include <string>
+
+using namespace std;
+//forward decleration
+class Character;
+class Pet;
+//*****ITEM BASE CLASS***** 
+// Abstract class for all items
+class Item {
+
+private:
+
+    string name;
+
+public:
+
+    Item(string n) { name = n; }
+// Pure virtual function
+    virtual void useItem(Character* target) = 0;
+
+    string getName() { return name; }
+
+};
+
+//***** INVENTORY *****
+// Holds up to 4 items
+class Inventory {
+
+private:
+
+    Item* items[4];
+
+    int count;
+
+public:
+//constructor indicate the inventory is empty
+    Inventory() {
+
+        count = 0;
+
+        for (int i = 0; i < 4; i++)
+
+        {
+            items[i] = nullptr;
+        }
+
+    }
+
+
+// Get item by index
+    Item* getItem(int index) {
+
+        if (index >= 0 && index < count)
+
+        {
+            return items[index];
+        }
+
+        return nullptr;
+
+    }
+
+
+//add item if there is space 
+    void addItem(Item* item) {
+
+        if (count < 4) {
+
+            items[count] = item;
+
+            count++;
+
+
+
+        }
+
+    }
+
+
+ // Show items
+    void displayItems() {
+
+        if (count == 0) {
+
+            cout << "\n==> Your bag is empty!!!" << endl;
+
+            return;
+
+        }
+
+        cout << "Inventory items:" << endl;
+
+        for (int i = 0; i < count; i++) {
+
+            cout << i + 1 << ". " << items[i]->getName() << endl;
+
+        }
+
+    }
+
+
+//remove item 
+    void removeItem(int index) {
+
+        if (index < 0 || index >= count) {
+
+            cout << "Invalid item index" << endl;
+
+            return;
+
+        }
+
+        for (int i = index; i < count - 1; i++) {
+
+            items[i] = items[i + 1];
+
+        }
+
+        count--;
+
+        items[count] = nullptr;
+
+    }
+
+    int getCount() { return count; }
+
+};
+//***** pet *****
+class Pet {
+
+private:
+    string name;
+    int attack;
+
+public:
+
+    Pet(string n, int a) {
+        name = n;
+        attack = a;
+    }
+
+    string getName() {
+        return name;
+    }
+
+    int getAttack() {
+        return attack;
+    }
+};
+//***** character *****
+class Character
+
+{
+
+private:
+
+    string name;
+
+    int health;
+
+    int attackPower;
+
+    int defense;
+
+    Inventory inventory;
+
+    Pet* pet = nullptr;
+
+
+public:
+
+
+
+    Character(string n, int a, int d)
+
+    {
+
+        name = n;
+
+        health = 100; // health const = 100 <<for everyone>>
+
+        attackPower = a;
+
+        defense = d;
+
+    }
+
+
+//***** Setters *****
+    void setHealth(int h)
+
+    {
+        health = h; if (health > 100) health = 100;
+    } //added
+
+
+
+    void setDefense(int d)
+
+    {
+        defense = d;
+    }  // added
+
+
+
+    void setAttackPower(int a)
+
+    {
+        attackPower = a;
+    }  // added
+
+
+//***** Getters *****
+    string getName()
+
+    {
+        return name;
+    }
+
+
+
+    int getHealth()
+
+    {
+        return health;
+    }
+
+
+
+    int getAttackPower()
+
+    {
+        return attackPower;
+    }
+
+
+
+    int getDefense()
+
+    {
+        return defense;
+    }
+
+
+
+    Inventory& getInv()
+
+    {
+        return inventory;
+    } // added
+
+
+    void setPet(Pet* p) {
+        pet = p;
+    }
+
+    Pet* getPet() {
+        return pet;
+    }
+
+//   attack 
+    void basicAttack(Character& target)
+    {
+        cout << "==>" << name << " launches attack on " << target.getName() << "\n";
+
+        target.takeDamage(attackPower);
+
+        // Pet attack
+        if (pet != nullptr)
+        {
+            cout << pet->getName() << " attacks the enemy!" << endl;
+            target.takeDamage(pet->getAttack());
+        }
+    }
+
+
+    void takeDamage(int attck)
+
+    {
+
+        int damage = attck - defense;
+
+        if (damage < 0) damage = 0;
+
+        health -= damage;
+
+        if (health < 0) health = 0;
+
+        cout << "\n==>" << name << " received " << damage << " damage. Remaining HP: " << health << endl;
+
+    }
+
+
+    // Abstract special attack
+    virtual void specialAttack(Character& target) = 0;
+
+};
+
+
+//***** Sub Classes *****
+//warrior inherits from character 
+class Warrior : public Character {
+
+public:
+
+    Warrior(string n) : Character(n, 15, 15) {}
+
+    void specialAttack(Character& target) {
+
+        cout << "\n==>" << getName() << " uses SWORD SLASH! (Double Damage)" << endl;
+
+        target.takeDamage(getAttackPower() * 2);
+
+    }
+
+};
+
+
+
+
+// Mage inherits from character 
+class Mage : public Character {
+
+public:
+
+    Mage(string n) : Character(n, 20, 10) {}
+
+    void specialAttack(Character& target) {
+
+        cout << "\n==>" << getName() << " casts FIREBALL!" << endl;
+
+        target.takeDamage(getAttackPower() + 10);
+
+    }
+
+};
+
+
+
+
+//  Archer inherits from character 
+class Archer : public Character {
+
+public:
+
+    Archer(string n) : Character(n, 10, 20) {}
+
+    void specialAttack(Character& target) override {
+
+        cout << "\n==> " << getName() << " fires ARROW RAIN!" << endl;
+
+        target.takeDamage(getAttackPower() + 25);
+
+    }
+
+};
+
+
+//weapon inherits from Item 
+class Weapon : public Item {
+
+public:
+
+    Weapon() : Item("Power Weapon") {}
+
+
+
+    void useItem(Character* target) {
+
+        target->setAttackPower(target->getAttackPower() + 10);
+
+        cout << target->getName() << "'s attack power increased" << endl;
+
+    }
+
+};
+
+//Shield inherits from Item 
+class Shield : public Item {
+
+public:
+
+    Shield() : Item("Iron Shield") {}
+
+    void useItem(Character* target) {
+
+        target->setDefense(target->getDefense() + 5);
+
+        cout << "==> " << target->getName() << "'s defense increased!" << endl;
+
+    }
+
+};
+
+
+//Potion inherits from Item 
+class Potion : public Item {
+
+public:
+
+    Potion() : Item("Health Potion") {}
+
+    void useItem(Character* target) {
+
+        target->setHealth(target->getHealth() + 20);
+
+        cout << "==> " << target->getName() << " used Potion! HP is now " << target->getHealth() << endl;
+
+    }
+
+};
+
+//Bomb inherits from Item 
+class Bomb : public Item {
+public:
+    Bomb() : Item("Fire Bomb") {}
+
+    void useItem(Character* target) {
+        int newHealth = target->getHealth();
+        target->setHealth(newHealth - 40);
+        cout << ">>> BOMB!!! \n";
+        cout << "The Bomb Hit " << target->getName() << " For 40 Damage!!\n";
+    }
+};
+
+
+
+//***** BattleSystem *****
+class BattleSystem {
+
+public:
+//create player 
+    Character* Player(int num) {
+
+        string name;
+
+        int choice;
+
+        cout << "\n===========\n";
+
+        cout << " PLAYER " << num;
+
+        cout << "\n===========\n";
+
+        cout << "Enter Name: ";
+
+        cin >> name;
+
+        cout << "Select your class\n1. Warrior          2. Mage           3. Archer\nChoice Number: ";
+
+        cin >> choice;
+
+        Character* p;
+
+        if (choice == 1) {
+            p = new Warrior(name);
+            p->setPet(new Pet("Wolf", 25));
+        }
+        else if (choice == 2) {
+            p = new Mage(name);
+            p->setPet(new Pet("Falcon", 30));
+        }
+        else {
+            p = new Archer(name);
+            p->setPet(new Pet("Bear", 36));
+        }
+        cout << name << " is accompanied by a " << p->getPet()->getName() << endl;
+
+      // Add items 
+        p->getInv().addItem(new Potion());
+
+        p->getInv().addItem(new Shield());
+
+        p->getInv().addItem(new Weapon());
+        
+        p->getInv().addItem(new Bomb());
+
+
+        return p;
+
+    }
+
+
+//start the Battle 
+    void start(Character& p1, Character& p2) {
+
+        cout << "\n-----THE BATTLE BEGINS-----\n";
+
+        cout << "     " << p1.getName() << " VS " << p2.getName() << "     " << endl;
+
+
+
+
+
+        while (p1.getHealth() > 0 && p2.getHealth() > 0) {
+
+            turnOrder(p1, p2);
+
+            if (p2.getHealth() <= 0) break;
+
+            turnOrder(p2, p1);
+
+        }
+
+
+
+        string winner;
+
+        if (p1.getHealth() > 0) {
+
+            winner = p1.getName();
+
+        }
+        else {
+
+            winner = p2.getName();
+        }
+
+        cout << "\nCHAMPION: " << winner << " wins the battle! \n" << endl;
+
+    }
+
+
+    private:
+    void turnOrder(Character& act, Character& re_at) {
+        int choice;
+        cout << "\n--- " << act.getName() << "'s Turn (HP: " << act.getHealth() << ") ---" << endl;
+        cout << "1. Basic Attack\n2. Special Attack\n3. Use Item\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1) {
+            act.basicAttack(re_at);
+        }
+        else if (choice == 2) {
+            act.specialAttack(re_at);
+        }
+        else if (choice == 3) {
+            act.getInv().displayItems();
+            if (act.getInv().getCount() > 0) {
+                int itemIdx;
+                cout << "Select item: ";
+                cin >> itemIdx;
+                Item* selected = act.getInv().getItem(itemIdx - 1);
+                if (selected) {
+                    if (selected->getName() == "Fire Bomb") {
+                        selected->useItem(&re_at);
+                    }
+                    else {
+                        selected->useItem(&act);
+                    }
+                    act.getInv().removeItem(itemIdx - 1);
+                }
+            }
+        }
+        else {
+            cout << "Invalid action! " << act.getName() << " missed the turn." << endl;
+        }
+    } 
+};
+
+
+
+
+
+// ***** MAIN *****
+int main() {
+
+    cout << "--Welcome to the Legacy RPG--" << endl;
+
+
+    BattleSystem begin;
+
+    Character* player1 = begin.Player(1);
+
+    Character* player2 = begin.Player(2);
+
+    begin.start(*player1, *player2);
+
+
+    return 0;
+
+}
